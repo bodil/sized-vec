@@ -1,0 +1,17 @@
+[package]
+name = "sized-vec"
+version = "0.1.0"
+authors = ["Bodil Stokke <bodil@bodil.org>"]
+license = "MPL-2.0+"
+description = "Type level sized vectors"
+repository = "https://github.com/bodil/sized-vec"
+documentation = "https://docs.rs/sized-vec"
+readme = "README.md"
+categories = ["data-structures"]
+keywords = ["typelevel"]
+
+[badges]
+travis-ci = { repository = "bodil/sized-vec" }
+
+[dependencies]
+typenum = "1.10.0"
