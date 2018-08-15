@@ -39,8 +39,24 @@
 //! If this looks too good to be true, it's because it comes with a number of
 //! limitations: you won't be able to perform operations on the vector which
 //! could leave it with a length that can't be known at compile time. This
-//! includes, notably, `FromIterator::from_iter()`, `Extend::extend()`, and
-//! filtering operations like `Vec::retain()`.
+//! includes `Extend::extend()` and filtering operations like `Vec::retain()`.
+//!
+//! `FromIterator::from_iter` is, notably, also not available, but you can use
+//! `Vec::try_from` as a replacement. Not that `try_from` needs to be able to
+//! infer the size of the resulting vector at compile time; there's no way to
+//! construct a vector of arbitrary length.
+//!
+//! ```
+//! # #[macro_use] extern crate sized_vec;
+//! # extern crate typenum;
+//! # use sized_vec::Vec;
+//! # use typenum::U2;
+//! # fn main() {
+//! let vec = svec![1, 2, 3, 4, 5];
+//! let new_vec = Vec::try_from(vec.into_iter().map(|i| i + 10));
+//! assert_eq!(Some(svec![11, 12, 13, 14, 15]), new_vec);
+//! # }
+//! ```
 
 #![allow(unknown_lints)]
 #![allow(type_complexity)] // ffs
@@ -50,6 +66,7 @@ extern crate typenum;
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
+
 use typenum::consts::*;
 use typenum::{
     Add1, Bit, Diff, Eq, IsEqual, IsLess, IsLessOrEqual, Le, LeEq, Sub1, Sum, True, Unsigned,
@@ -159,6 +176,67 @@ where
         Vec {
             len: PhantomData,
             vec,
+        }
+    }
+
+    /// Construct a vector of size `N` from an iterator.
+    ///
+    /// Returns `None` if the iterator didn't contain exactly `N` elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let good_vec: Option<Vec<U3, _>> = Vec::try_from(1..=3);
+    /// assert_eq!(Some(svec![1, 2, 3]), good_vec);
+    ///
+    /// let bad_vec: Option<Vec<U3, _>> = Vec::try_from(1..=500);
+    /// assert_eq!(None, bad_vec);
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn try_from<I>(iter: I) -> Option<Self>
+    where
+        I: IntoIterator<Item = A>,
+    {
+        let mut vec = ::std::vec::Vec::with_capacity(N::USIZE);
+        vec.extend(iter);
+        if vec.len() == N::USIZE {
+            Some(Vec::from_vec(vec))
+        } else {
+            None
+        }
+    }
+
+    /// Construct a vector of size `N` from a `std::vec::Vec`.
+    ///
+    /// Returns `None` if the source vector didn't contain exactly `N` elements.
+    ///
+    /// This is functionally equivalent to `Vec::try_from`, but slightly faster.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let good_vec: Option<Vec<U3, _>> = Vec::try_from_vec(vec![1, 2, 3]);
+    /// assert_eq!(Some(svec![1, 2, 3]), good_vec);
+    ///
+    /// let bad_vec: Option<Vec<U3, _>> = Vec::try_from_vec(vec![1, 2]);
+    /// assert_eq!(None, bad_vec);
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn try_from_vec(vec: ::std::vec::Vec<A>) -> Option<Self> {
+        if vec.len() == N::USIZE {
+            Some(Vec::from_vec(vec))
+        } else {
+            None
         }
     }
 
@@ -765,5 +843,12 @@ mod tests {
         assert_eq!(4, v4.len());
         assert_eq!(svec![1, 2, 3, 4,], v4);
         assert_eq!(2, v4[U1::new()]);
+    }
+
+    proptest! {
+        #[test]
+        fn test_the_proptest(ref vec in sized_vec::<U16, _>(".*")) {
+            assert_eq!(16, vec.len())
+        }
     }
 }
