@@ -721,6 +721,24 @@ where
     }
 }
 
+impl<N, A> Into<::std::vec::Vec<A>> for Vec<N, A>
+where
+    N: Unsigned,
+{
+    fn into(self) -> ::std::vec::Vec<A> {
+        self.vec
+    }
+}
+
+impl<'a, N, A> Into<&'a [A]> for &'a Vec<N, A>
+where
+    N: Unsigned,
+{
+    fn into(self) -> &'a [A] {
+        &self.vec
+    }
+}
+
 impl<N, A> IntoIterator for Vec<N, A>
 where
     N: Unsigned,
