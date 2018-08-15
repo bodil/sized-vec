@@ -15,3 +15,6 @@ travis-ci = { repository = "bodil/sized-vec" }
 
 [dependencies]
 typenum = "1.10.0"
+
+[dev-dependencies]
+pretty_assertions = "0.5"

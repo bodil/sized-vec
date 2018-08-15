@@ -47,6 +47,9 @@
 
 extern crate typenum;
 
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 use typenum::consts::*;
 use typenum::{
     Add1, Bit, Diff, Eq, IsEqual, IsLess, IsLessOrEqual, Le, LeEq, Sub1, Sum, True, Unsigned,
