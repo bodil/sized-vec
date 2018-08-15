@@ -63,6 +63,11 @@
 
 extern crate typenum;
 
+#[cfg(any(test, feature = "serde"))]
+extern crate serde;
+#[cfg(test)]
+extern crate serde_json;
+
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
@@ -825,9 +830,59 @@ where
     }
 }
 
+#[cfg(any(test, feature = "serde"))]
+mod ser {
+    use super::*;
+    use serde::de::{Deserialize, Deserializer, Error};
+    use serde::ser::{Serialize, Serializer};
+
+    impl<N, A> Serialize for Vec<N, A>
+    where
+        N: Unsigned,
+        A: Serialize,
+    {
+        fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            self.vec.serialize(ser)
+        }
+    }
+
+    impl<'de, N, A> Deserialize<'de> for Vec<N, A>
+    where
+        N: Unsigned,
+        A: Deserialize<'de>,
+    {
+        fn deserialize<D>(des: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            Self::try_from_vec(Deserialize::deserialize(des)?).ok_or_else(|| {
+                <D as Deserializer<'de>>::Error::custom(format!(
+                    "length of sized_vec::Vec was not {}",
+                    N::USIZE
+                ))
+            })
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use serde_json::{from_str, to_string};
+
+        #[test]
+        fn serialise() {
+            let v = svec![1, 2, 3, 4, 5];
+            assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn basics() {
         let v = svec![1, 2, 3];
