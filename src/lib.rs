@@ -154,6 +154,7 @@ where
         unsafe { transmute(self) }
     }
 
+    #[must_use]
     fn from_vec(vec: ::std::vec::Vec<A>) -> Vec<N, A> {
         Vec {
             len: PhantomData,
@@ -162,6 +163,31 @@ where
     }
 
     /// Push an element onto the end of the vector.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::{U2, U3};
+    /// # fn main() {
+    /// let vec: Vec<U2, _> = svec![1, 2];
+    /// let new_vec: Vec<U3, _> = vec.push(3);
+    /// assert_eq!(svec![1, 2, 3], new_vec);
+    /// # }
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::{U2, U3};
+    /// # fn main() {
+    /// let vec: Vec<U2, _> = svec![1, 2];
+    /// // Type error, because the new length will be U3, not U2:
+    /// let new_vec: Vec<U2, _> = vec.push(3);
+    /// # }
+    /// ```
     #[must_use]
     pub fn push(mut self, a: A) -> Vec<Add1<N>, A>
     where
@@ -173,6 +199,31 @@ where
     }
 
     /// Pop an element off the end of the vector.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # fn main() {
+    /// let vec = svec![1, 2, 3];
+    /// let (new_vec, value) = vec.pop();
+    /// assert_eq!(svec![1, 2], new_vec);
+    /// assert_eq!(3, value);
+    /// # }
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::{U2, U3};
+    /// # fn main() {
+    /// let vec: Vec<U3, _> = svec![1, 2, 3];
+    /// // Type error, because the new length will be U2, not U3:
+    /// let (new_vec: Vec<U3, _>, value) = vec.pop();
+    /// # }
+    /// ```
     #[must_use]
     pub fn pop(mut self) -> (Vec<Diff<N, U1>, A>, A)
     where
@@ -236,6 +287,30 @@ where
     }
 
     /// Get a reference to the element at index `Index`.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U1;
+    /// # fn main() {
+    /// let vec = svec![1, 2, 3];
+    /// assert_eq!(&2, vec.get(U1::new()));
+    /// # }
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U5;
+    /// # fn main() {
+    /// let vec = svec![1, 2, 3];
+    /// // This index is out of bounds, so this won't compile:
+    /// assert_eq!(&2, vec.get(U5::new()));
+    /// # }
+    /// ```
     #[inline]
     #[must_use]
     pub fn get<Index>(&self, _: Index) -> &A
@@ -676,7 +751,7 @@ where
 mod tests {
     use super::*;
     #[test]
-    fn test_me() {
+    fn basics() {
         let v = svec![1, 2, 3];
         assert_eq!(U3::USIZE, v.len());
         assert_eq!(&2, v.get(U1::new()));
