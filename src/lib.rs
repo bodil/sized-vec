@@ -68,6 +68,10 @@ extern crate serde;
 #[cfg(test)]
 extern crate serde_json;
 
+#[cfg(any(test, feature = "proptest"))]
+#[macro_use]
+extern crate proptest as pt;
+
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
@@ -879,8 +883,37 @@ mod ser {
     }
 }
 
+#[cfg(any(test, feature = "proptest"))]
+pub mod proptest {
+    use super::*;
+    use pt::collection::vec as stdvec;
+    use pt::strategy::{BoxedStrategy, Strategy, ValueTree};
+
+    /// A strategy for generating a sized vector.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// proptest! {
+    ///     #[test]
+    ///     fn proptest_a_vector(ref vec in sized_vec::<U16, _>(".*")) {
+    ///         assert_eq!(16, vec.len());
+    ///     }
+    /// }
+    /// ```
+    pub fn sized_vec<N, A>(element: A) -> BoxedStrategy<Vec<N, <A::Tree as ValueTree>::Value>>
+    where
+        N: Unsigned + 'static,
+        A: Strategy + 'static,
+        <A::Tree as ValueTree>::Value: Clone,
+    {
+        stdvec(element, N::USIZE).prop_map(Vec::from_vec).boxed()
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::proptest::sized_vec;
     use super::*;
 
     #[test]
