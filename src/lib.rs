@@ -58,9 +58,6 @@
 //! # }
 //! ```
 
-#![allow(unknown_lints)]
-#![allow(type_complexity)] // ffs
-
 extern crate typenum;
 
 #[cfg(any(test, feature = "serde"))]
