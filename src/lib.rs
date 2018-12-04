@@ -42,7 +42,7 @@
 //! includes `Extend::extend()` and filtering operations like `Vec::retain()`.
 //!
 //! `FromIterator::from_iter` is, notably, also not available, but you can use
-//! `Vec::try_from` as a replacement. Not that `try_from` needs to be able to
+//! `Vec::try_from` as a replacement. Note that `try_from` needs to be able to
 //! infer the size of the resulting vector at compile time; there's no way to
 //! construct a vector of arbitrary length.
 //!
