@@ -10,7 +10,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added an `apply` implementation for the category theorists.
+- `repeat` and `fill` constructors.
+- An `apply` implementation for the category theorists.
 
 ## [0.2.0] - 2018-08-15
 

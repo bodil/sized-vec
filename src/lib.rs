@@ -185,6 +185,51 @@ where
         }
     }
 
+    /// Construct a vector of size `N` using a function.
+    ///
+    /// The function is called with an index to generate a value of `A` for each
+    /// index in the vector.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let vec: Vec<U3, _> = Vec::fill(|i| i + 10);
+    /// assert_eq!(svec![10, 11, 12], vec);
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn fill<F>(f: F) -> Vec<N, A>
+    where
+        F: FnMut(usize) -> A,
+    {
+        Vec::from_vec((0..N::USIZE).map(f).collect())
+    }
+
+    /// Construct a vector of size `N` containing the same element repeated.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let vec: Vec<U3, _> = Vec::repeat(5);
+    /// assert_eq!(svec![5, 5, 5], vec);
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn repeat(a: A) -> Vec<N, A>
+    where
+        A: Clone,
+    {
+        Vec::from_vec(::std::iter::repeat(a).take(N::USIZE).collect())
+    }
+
     /// Construct a vector of size `N` from an iterator.
     ///
     /// Returns `None` if the iterator didn't contain exactly `N` elements.
