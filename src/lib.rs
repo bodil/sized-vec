@@ -636,6 +636,19 @@ where
         Vec::from_vec(self.into_iter().map(f).collect())
     }
 
+    #[must_use]
+    pub fn apply<F, B>(self, fs: Vec<N, F>) -> Vec<N, B>
+    where
+        F: FnMut(A) -> B,
+    {
+        Vec::from_vec(
+            self.into_iter()
+                .zip(fs.into_iter())
+                .map(|(a, mut f)| f(a))
+                .collect(),
+        )
+    }
+
     /// Merge two vectors together into a new vector using a function.
     ///
     /// # Examples
