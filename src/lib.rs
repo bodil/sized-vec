@@ -709,6 +709,7 @@ where
     /// ], vec);
     /// # }
     /// ```
+    #[must_use]
     pub fn zip<B, C, F>(self, other: Vec<N, B>, mut f: F) -> Vec<N, C>
     where
         F: FnMut(A, B) -> C,
@@ -736,6 +737,7 @@ where
     /// ], vec);
     /// # }
     /// ```
+    #[must_use]
     pub fn unzip<B, C, F>(self, f: F) -> (Vec<N, B>, Vec<N, C>)
     where
         F: FnMut(A) -> (B, C),

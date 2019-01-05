@@ -13,6 +13,11 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - `repeat` and `fill` constructors.
 - An `apply` implementation for the category theorists.
 
+### Fixed
+
+- `zip` and `unzip` will now correctly give warnings if you don't use their
+  results.
+
 ## [0.2.0] - 2018-08-15
 
 ### Added
