@@ -1,6 +1,6 @@
 [package]
 name = "sized-vec"
-version = "0.2.2"
+version = "0.2.3-alpha.0"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
 description = "Type level sized vectors"
