@@ -681,6 +681,20 @@ where
         Vec::from_vec(self.into_iter().map(f).collect())
     }
 
+    /// Apply a list of functions from `A` to `B` to a vector of `A` in order,
+    /// returning a vector of `B`.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # fn main() {
+    /// let vec = svec![1, 2, 3];
+    /// let fn_vec = vec.clone().map(|i| move |a| a + i);
+    /// let vec = vec.apply(fn_vec);
+    /// assert_eq!(svec![2, 4, 6], vec);
+    /// # }
+    /// ```
     #[must_use]
     pub fn apply<F, B>(self, fs: Vec<N, F>) -> Vec<N, B>
     where
