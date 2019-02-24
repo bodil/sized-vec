@@ -1,6 +1,6 @@
 [package]
 name = "sized-vec"
-version = "0.2.3-alpha.0"
+version = "0.2.3"
 edition = "2018"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
