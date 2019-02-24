@@ -58,21 +58,6 @@
 //! # }
 //! ```
 
-extern crate typenum;
-
-#[cfg(any(test, feature = "serde"))]
-extern crate serde;
-#[cfg(test)]
-extern crate serde_json;
-
-#[cfg(any(test, feature = "proptest"))]
-#[macro_use]
-extern crate proptest as pt;
-
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
-
 use typenum::consts::*;
 use typenum::{
     Add1, Bit, Diff, Eq, IsEqual, IsLess, IsLessOrEqual, Le, LeEq, Sub1, Sum, True, Unsigned,
@@ -959,24 +944,13 @@ mod ser {
             })
         }
     }
-
-    #[cfg(test)]
-    mod tests {
-        use serde_json::{from_str, to_string};
-
-        #[test]
-        fn serialise() {
-            let v = svec![1, 2, 3, 4, 5];
-            assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
-        }
-    }
 }
 
 #[cfg(any(test, feature = "proptest"))]
 pub mod proptest {
     use super::*;
-    use pt::collection::vec as stdvec;
-    use pt::strategy::{BoxedStrategy, Strategy, ValueTree};
+    use ::proptest::collection::vec as stdvec;
+    use ::proptest::strategy::{BoxedStrategy, Strategy, ValueTree};
 
     /// A strategy for generating a sized vector.
     ///
@@ -1004,6 +978,9 @@ pub mod proptest {
 mod tests {
     use super::proptest::sized_vec;
     use super::*;
+    use ::proptest::proptest;
+    use pretty_assertions::assert_eq;
+    use serde_json::{from_str, to_string};
 
     #[test]
     fn basics() {
@@ -1022,10 +999,17 @@ mod tests {
         assert_eq!(2, v4[U1::new()]);
     }
 
+    #[test]
+    fn serialise() {
+        let v = svec![1, 2, 3, 4, 5];
+        assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
+    }
+
     proptest! {
         #[test]
         fn test_the_proptest(ref vec in sized_vec::<U16, _>(".*")) {
             assert_eq!(16, vec.len())
         }
     }
+
 }
