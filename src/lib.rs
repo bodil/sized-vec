@@ -276,6 +276,27 @@ where
         }
     }
 
+    /// Construct a vector of size `N` using the default value.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let vec: Vec<U3, _> = Vec::from_default();
+    /// assert_eq!(svec![0, 0, 0], vec);
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn from_default() -> Vec<N, A>
+    where
+        A: Default,
+    {
+        Vec::from_vec((0..N::USIZE).map(|_| Default::default()).collect())
+    }
+
     /// Push an element onto the end of the vector.
     ///
     /// # Examples
