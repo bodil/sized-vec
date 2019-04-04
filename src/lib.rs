@@ -867,6 +867,15 @@ where
     }
 }
 
+impl<N, A> Borrow<::std::vec::Vec<A>> for Vec<N, A>
+where
+    N: Unsigned,
+{
+    fn borrow(&self) -> &::std::vec::Vec<A> {
+        &self.vec
+    }
+}
+
 impl<N, A> BorrowMut<[A]> for Vec<N, A>
 where
     N: Unsigned,

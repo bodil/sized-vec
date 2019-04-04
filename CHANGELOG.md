@@ -12,7 +12,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - `Vec::from_default()` constructor.
 - `Into` implementation for converting into mutable slices.
-- `AsRef` implementation for getting a reference to the wrapped `std::vec::Vec`.
+- `AsRef` and `Borrow` implementations for getting a reference to the wrapped
+  `std::vec::Vec`.
 
 ## [0.2.2] - 2019-02-11
 
