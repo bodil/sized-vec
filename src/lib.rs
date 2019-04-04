@@ -728,12 +728,9 @@ where
     /// # #[macro_use] extern crate sized_vec;
     /// # extern crate typenum;
     /// # fn main() {
-    /// let left = svec!["foo", "bar"];
-    /// let right = svec!["lol", "omg"];
-    /// let vec = left.zip(right, |a, b| format!("{} {}", a, b));
-    /// assert_eq!(svec![
-    ///     "foo lol".to_string(), "bar omg".to_string()
-    /// ], vec);
+    /// let vec = svec![1, 2, 3];
+    /// let vec = vec.unzip(|a| (a, a * 2));
+    /// assert_eq!((svec![1, 2, 3], svec![2, 4, 6]), vec);
     /// # }
     /// ```
     #[must_use]
