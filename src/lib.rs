@@ -917,6 +917,15 @@ where
     }
 }
 
+impl<N, A> AsRef<::std::vec::Vec<A>> for Vec<N, A>
+where
+    N: Unsigned,
+{
+    fn as_ref(&self) -> &::std::vec::Vec<A> {
+        &self.vec
+    }
+}
+
 impl<N, A> AsMut<[A]> for Vec<N, A>
 where
     N: Unsigned,
