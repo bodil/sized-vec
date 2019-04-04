@@ -813,6 +813,15 @@ where
     }
 }
 
+impl<'a, N, A> Into<&'a mut [A]> for &'a mut Vec<N, A>
+where
+    N: Unsigned,
+{
+    fn into(self) -> &'a mut [A] {
+        &mut self.vec
+    }
+}
+
 impl<N, A> IntoIterator for Vec<N, A>
 where
     N: Unsigned,

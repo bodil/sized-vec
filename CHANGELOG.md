@@ -10,7 +10,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added the `from_default` method.
+- `Vec::from_default()` constructor.
+- `Into` implementation for converting into mutable slices.
 
 ## [0.2.2] - 2019-02-11
 
