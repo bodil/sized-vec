@@ -53,11 +53,12 @@
 //! # use typenum::U2;
 //! # fn main() {
 //! let vec = svec![1, 2, 3, 4, 5];
-//! let new_vec = Vec::try_from(vec.into_iter().map(|i| i + 10));
+//! let new_vec = Vec::try_from_iter(vec.into_iter().map(|i| i + 10));
 //! assert_eq!(Some(svec![11, 12, 13, 14, 15]), new_vec);
 //! # }
 //! ```
 
+use std::convert::TryFrom;
 use typenum::consts::*;
 use typenum::{
     Add1, Bit, Diff, Eq, IsEqual, IsLess, IsLessOrEqual, Le, LeEq, Sub1, Sum, True, Unsigned,
@@ -226,49 +227,20 @@ where
     /// # use sized_vec::Vec;
     /// # use typenum::U3;
     /// # fn main() {
-    /// let good_vec: Option<Vec<U3, _>> = Vec::try_from(1..=3);
+    /// let good_vec: Option<Vec<U3, _>> = Vec::try_from_iter(1..=3);
     /// assert_eq!(Some(svec![1, 2, 3]), good_vec);
     ///
-    /// let bad_vec: Option<Vec<U3, _>> = Vec::try_from(1..=500);
+    /// let bad_vec: Option<Vec<U3, _>> = Vec::try_from_iter(1..=500);
     /// assert_eq!(None, bad_vec);
     /// # }
     /// ```
     #[must_use]
-    pub fn try_from<I>(iter: I) -> Option<Self>
+    pub fn try_from_iter<I>(iter: I) -> Option<Self>
     where
         I: IntoIterator<Item = A>,
     {
         let mut vec = ::std::vec::Vec::with_capacity(N::USIZE);
         vec.extend(iter);
-        if vec.len() == N::USIZE {
-            Some(Vec::from_vec(vec))
-        } else {
-            None
-        }
-    }
-
-    /// Construct a vector of size `N` from a `std::vec::Vec`.
-    ///
-    /// Returns `None` if the source vector didn't contain exactly `N` elements.
-    ///
-    /// This is functionally equivalent to `Vec::try_from`, but slightly faster.
-    ///
-    /// # Examples
-    /// ```
-    /// # #[macro_use] extern crate sized_vec;
-    /// # extern crate typenum;
-    /// # use sized_vec::Vec;
-    /// # use typenum::U3;
-    /// # fn main() {
-    /// let good_vec: Option<Vec<U3, _>> = Vec::try_from_vec(vec![1, 2, 3]);
-    /// assert_eq!(Some(svec![1, 2, 3]), good_vec);
-    ///
-    /// let bad_vec: Option<Vec<U3, _>> = Vec::try_from_vec(vec![1, 2]);
-    /// assert_eq!(None, bad_vec);
-    /// # }
-    /// ```
-    #[must_use]
-    pub fn try_from_vec(vec: ::std::vec::Vec<A>) -> Option<Self> {
         if vec.len() == N::USIZE {
             Some(Vec::from_vec(vec))
         } else {
@@ -953,6 +925,195 @@ where
     }
 }
 
+impl<N, A> TryFrom<std::vec::Vec<A>> for Vec<N, A>
+where
+    N: Unsigned,
+{
+    type Error = ();
+
+    /// Construct a vector of size `N` from a `std::vec::Vec`.
+    ///
+    /// Returns `Err(())` if the source vector didn't contain exactly `N` elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use std::convert::TryFrom;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let good_vec: Result<Vec<U3, _>, _> = Vec::try_from(vec![1, 2, 3]);
+    /// assert_eq!(Ok(svec![1, 2, 3]), good_vec);
+    ///
+    /// let bad_vec: Result<Vec<U3, _>, _> = Vec::try_from(vec![1, 2]);
+    /// assert_eq!(Err(()), bad_vec);
+    /// # }
+    /// ```
+    #[must_use]
+    fn try_from(vec: ::std::vec::Vec<A>) -> Result<Self, Self::Error> {
+        if vec.len() == N::USIZE {
+            Ok(Vec::from_vec(vec))
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl<N, A> TryFrom<Box<[A]>> for Vec<N, A>
+where
+    N: Unsigned,
+{
+    type Error = ();
+
+    /// Construct a vector of size `N` from a boxed array.
+    ///
+    /// Returns `Err(())` if the source vector didn't contain exactly `N` elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use std::convert::TryFrom;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let boxed: Box<[_]> = Box::new([1, 2, 3]);
+    /// let good_vec: Result<Vec<U3, _>, _> = Vec::try_from(boxed);
+    /// assert_eq!(Ok(svec![1, 2, 3]), good_vec);
+    ///
+    /// let boxed: Box<[_]> = Box::new([1, 2]);
+    /// let bad_vec: Result<Vec<U3, _>, _> = Vec::try_from(boxed);
+    /// assert_eq!(Err(()), bad_vec);
+    /// # }
+    /// ```
+    #[must_use]
+    fn try_from(array: Box<[A]>) -> Result<Self, Self::Error> {
+        if array.len() == N::USIZE {
+            Ok(Vec::from_vec(array.into_vec()))
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl<'a, N, A> TryFrom<&'a [A]> for Vec<N, A>
+where
+    A: Clone,
+    N: Unsigned,
+{
+    type Error = ();
+
+    /// Construct a vector of size `N` from a slice of clonable values.
+    ///
+    /// Returns `Err(())` if the source slice didn't contain exactly `N` elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # extern crate typenum;
+    /// # use std::convert::TryFrom;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # fn main() {
+    /// let good_vec: Result<Vec<U3, _>, _> = Vec::try_from([1, 2, 3].as_ref());
+    /// assert_eq!(Ok(svec![1, 2, 3]), good_vec);
+    ///
+    /// let bad_vec: Result<Vec<U3, _>, _> = Vec::try_from([1, 2].as_ref());
+    /// assert_eq!(Err(()), bad_vec);
+    /// # }
+    /// ```
+    #[must_use]
+    fn try_from(slice: &'a [A]) -> Result<Self, Self::Error> {
+        Vec::try_from_iter(slice.iter().cloned()).ok_or(())
+    }
+}
+
+macro_rules! declare_from_array {
+    ($s1:expr, $s2:ty) => {
+        impl<A> From<[A; $s1]> for Vec<$s2, A> {
+            #[must_use]
+            fn from(array: [A; $s1]) -> Self {
+                let boxed_array: Box<[A]> = Box::new(array);
+                let vec = boxed_array.into_vec();
+                debug_assert_eq!($s1, vec.len());
+                Vec::from_vec(vec)
+            }
+        }
+    };
+}
+
+declare_from_array!(0, U0);
+declare_from_array!(1, U1);
+declare_from_array!(2, U2);
+declare_from_array!(3, U3);
+declare_from_array!(4, U4);
+declare_from_array!(5, U5);
+declare_from_array!(6, U6);
+declare_from_array!(7, U7);
+declare_from_array!(8, U8);
+declare_from_array!(9, U9);
+declare_from_array!(10, U10);
+declare_from_array!(11, U11);
+declare_from_array!(12, U12);
+declare_from_array!(13, U13);
+declare_from_array!(14, U14);
+declare_from_array!(15, U15);
+declare_from_array!(16, U16);
+declare_from_array!(17, U17);
+declare_from_array!(18, U18);
+declare_from_array!(19, U19);
+declare_from_array!(20, U20);
+declare_from_array!(21, U21);
+declare_from_array!(22, U22);
+declare_from_array!(23, U23);
+declare_from_array!(24, U24);
+declare_from_array!(25, U25);
+declare_from_array!(26, U26);
+declare_from_array!(27, U27);
+declare_from_array!(28, U28);
+declare_from_array!(29, U29);
+declare_from_array!(30, U30);
+declare_from_array!(31, U31);
+
+#[cfg(any(test, feature = "generic-array"))]
+impl<N, A> From<generic_array::GenericArray<A, N>> for Vec<N, A>
+where
+    N: Unsigned + generic_array::ArrayLength<A>,
+{
+    /// Construct a vector of size `N` from a `GenericArray`.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[macro_use] extern crate sized_vec;
+    /// # use std::convert::TryFrom;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # use generic_array::GenericArray;
+    /// # fn main() {
+    /// let array = GenericArray::from([1, 2, 3]);
+    /// let good_vec: Vec<U3, _> = Vec::from(array);
+    /// assert_eq!(svec![1, 2, 3], good_vec);
+    /// # }
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # #[macro_use] extern crate sized_vec;
+    /// # use std::convert::TryFrom;
+    /// # use sized_vec::Vec;
+    /// # use typenum::U3;
+    /// # use generic_array::GenericArray;
+    /// # fn main() {
+    /// let array = GenericArray::from([1, 2]);
+    /// let bad_vec: Vec<U3, _> = Vec::from(array);
+    /// # }
+    /// ```
+    #[must_use]
+    fn from(array: generic_array::GenericArray<A, N>) -> Self {
+        Vec::from_vec(array.into_iter().collect())
+    }
+}
+
 #[cfg(any(test, feature = "serde"))]
 mod ser {
     use super::*;
@@ -981,7 +1142,8 @@ mod ser {
         where
             D: Deserializer<'de>,
         {
-            Self::try_from_vec(Deserialize::deserialize(des)?).ok_or_else(|| {
+            let vec: std::vec::Vec<_> = Deserialize::deserialize(des)?;
+            Self::try_from(vec).map_err(|()| {
                 <D as Deserializer<'de>>::Error::custom(format!(
                     "length of sized_vec::Vec was not {}",
                     N::USIZE
@@ -1048,6 +1210,12 @@ mod tests {
     fn serialise() {
         let v = svec![1, 2, 3, 4, 5];
         assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
+    }
+
+    #[test]
+    fn static_array_conversion() {
+        let v = Vec::from([1, 2, 3, 4, 5]);
+        assert_eq!(svec![1, 2, 3, 4, 5], v);
     }
 
     proptest! {
