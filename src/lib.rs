@@ -5,7 +5,8 @@
 //! # Type Level Sized Vectors
 //!
 //! This crate provides a `Vec<N, A>` type, which wraps the standard `Vec<A>`
-//! and tracks its size `N` at the type level.
+//! and tracks its size `N` at the type level using the [`typenum`][typenum]
+//! crate.
 //!
 //! Because the size is embedded in the type, we can do things like verifying at
 //! compile time that index lookups are within bounds.
@@ -42,9 +43,9 @@
 //! includes `Extend::extend()` and filtering operations like `Vec::retain()`.
 //!
 //! `FromIterator::from_iter` is, notably, also not available, but you can use
-//! `Vec::try_from` as a replacement. Note that `try_from` needs to be able to
-//! infer the size of the resulting vector at compile time; there's no way to
-//! construct a vector of arbitrary length.
+//! `Vec::try_from_iter` as a replacement. Note that `try_from_iter` needs to be
+//! able to infer the size of the resulting vector at compile time; there's no
+//! way to construct a vector of arbitrary length.
 //!
 //! ```
 //! # #[macro_use] extern crate sized_vec;
@@ -57,6 +58,8 @@
 //! assert_eq!(Some(svec![11, 12, 13, 14, 15]), new_vec);
 //! # }
 //! ```
+//!
+//! [typenum]: https://crates.io/crates/typenum
 
 use std::convert::TryFrom;
 use typenum::consts::*;

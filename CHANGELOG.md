@@ -31,7 +31,7 @@ The minimum compatible `rustc` version for this crate is now 1.34.0.
 - There are now `From` implementations for fixed arrays `[A; n]` for any `n`
   from 0 to 32 exclusive.
 - There is a `From` implementation for `GenericArray<A, N>` from the
-  [`generic-array`](https://crates.io/crates/generic-array) behind the
+  [`generic-array`](https://crates.io/crates/generic-array) crate behind the
   `generic-array` feature flag.
 
 ## [0.2.2] - 2019-02-11
