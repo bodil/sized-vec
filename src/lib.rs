@@ -1079,7 +1079,7 @@ declare_from_array!(29, U29);
 declare_from_array!(30, U30);
 declare_from_array!(31, U31);
 
-#[cfg(any(test, feature = "generic-array"))]
+#[cfg(feature = "generic-array")]
 impl<N, A> From<generic_array::GenericArray<A, N>> for Vec<N, A>
 where
     N: Unsigned + generic_array::ArrayLength<A>,
@@ -1117,7 +1117,7 @@ where
     }
 }
 
-#[cfg(any(test, feature = "serde"))]
+#[cfg(feature = "serde")]
 mod ser {
     use super::*;
     use serde::de::{Deserialize, Deserializer, Error};
@@ -1154,9 +1154,21 @@ mod ser {
             })
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::*;
+        use serde_json::{from_str, to_string};
+
+        #[test]
+        fn serialise() {
+            let v = svec![1, 2, 3, 4, 5];
+            assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
+        }
+    }
 }
 
-#[cfg(any(test, feature = "proptest"))]
+#[cfg(feature = "proptest")]
 pub mod proptest {
     use super::*;
     use ::proptest::collection::vec as stdvec;
@@ -1182,15 +1194,26 @@ pub mod proptest {
     {
         stdvec(element, N::USIZE).prop_map(Vec::from_vec).boxed()
     }
+
+    #[cfg(test)]
+    mod tests {
+        use super::proptest::sized_vec;
+        use crate::*;
+        use ::proptest::proptest;
+
+        proptest! {
+            #[test]
+            fn test_the_proptest(ref vec in sized_vec::<U16, _>(".*")) {
+                assert_eq!(16, vec.len())
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::proptest::sized_vec;
     use super::*;
-    use ::proptest::proptest;
     use pretty_assertions::assert_eq;
-    use serde_json::{from_str, to_string};
 
     #[test]
     fn basics() {
@@ -1210,22 +1233,9 @@ mod tests {
     }
 
     #[test]
-    fn serialise() {
-        let v = svec![1, 2, 3, 4, 5];
-        assert_eq!(v, from_str(&to_string(&v).unwrap()).unwrap());
-    }
-
-    #[test]
     fn static_array_conversion() {
         let v = Vec::from([1, 2, 3, 4, 5]);
         assert_eq!(svec![1, 2, 3, 4, 5], v);
-    }
-
-    proptest! {
-        #[test]
-        fn test_the_proptest(ref vec in sized_vec::<U16, _>(".*")) {
-            assert_eq!(16, vec.len())
-        }
     }
 
 }

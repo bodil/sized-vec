@@ -77,7 +77,7 @@ commands:
     steps:
       - run:
           name: Run all tests
-          command: cargo test --all<<#parameters.release>> --release<</parameters.release>>
+          command: cargo test --all-features --all<<#parameters.release>> --release<</parameters.release>>
 
 jobs:
   check:
