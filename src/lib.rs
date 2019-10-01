@@ -61,6 +61,8 @@
 //!
 //! [typenum]: https://crates.io/crates/typenum
 
+#![allow(clippy::type_repetition_in_bounds)]
+
 use std::convert::TryFrom;
 use typenum::consts::*;
 use typenum::{
@@ -1237,5 +1239,4 @@ mod tests {
         let v = Vec::from([1, 2, 3, 4, 5]);
         assert_eq!(svec![1, 2, 3, 4, 5], v);
     }
-
 }
